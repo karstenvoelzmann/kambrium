@@ -1,0 +1,36 @@
+#########################
+## Wordpress gitignore ##
+#########################
+
+# Ignore wp-config and .htaccess
+wp-config.php
+.htaccess
+
+# Ignore licences and readmes
+/license.txt
+/liesmich.html
+/readme.html
+
+# Ignore the wp-content/uploads/ directory
+/wp-content/uploads/
+/wp-content/upgrade/
+#/wp-content/themes/twenty*
+
+
+# Ignore specfic plugins
+wp-content/plugins/typo3-importer/
+wp-content/*log.txt
+
+# Ignore database dumps
+*.sql
+
+# Ignore IDE specific files
+*.tmproj
+.idea
+.idea/
+atlassian-ide-plugin.xml
+
+# Ignore Mac finder artifacts, Hidden files
+.DS_Store
+*Thumbs.db
+
