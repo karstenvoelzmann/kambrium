@@ -11,16 +11,21 @@ class Frontend {
 
 	private $_is_frontend_mode = false;
 	private $_has_elementor_in_page = false;
+	private $_is_excerpt = false;
 
 	public function init() {
-		if ( Plugin::$instance->editor->is_edit_mode() || Plugin::$instance->preview->is_preview_mode() ) {
+		if ( Plugin::$instance->editor->is_edit_mode() ) {
+			return;
+		}
+
+		add_filter( 'body_class', [ $this, 'body_class' ] );
+
+		if ( Plugin::$instance->preview->is_preview_mode() ) {
 			return;
 		}
 
 		$this->_is_frontend_mode = true;
-		$this->_has_elementor_in_page = Plugin::$instance->db->has_elementor_in_post( get_the_ID() );
-
-		add_filter( 'body_class', [ $this, 'body_class' ] );
+		$this->_has_elementor_in_page = Plugin::$instance->db->is_built_with_elementor( get_the_ID() );
 
 		if ( $this->_has_elementor_in_page ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_styles' ] );
@@ -47,9 +52,13 @@ class Frontend {
 
 	public function body_class( $classes = [] ) {
 		$classes[] = 'elementor-default';
-		if ( is_singular() && 'builder' === Plugin::$instance->db->get_edit_mode( get_the_ID() ) ) {
-			$classes[] = 'elementor-page';
+
+		$id = get_the_ID();
+
+		if ( is_singular() && 'builder' === Plugin::$instance->db->get_edit_mode( $id ) ) {
+			$classes[] = 'elementor-page elementor-page-' . $id;
 		}
+
 		return $classes;
 	}
 
@@ -128,6 +137,8 @@ class Frontend {
 			ELEMENTOR_VERSION,
 			true
 		);
+
+		do_action( 'elementor/frontend/after_register_scripts' );
 	}
 
 	public function register_styles() {
@@ -342,8 +353,10 @@ class Frontend {
 			return '';
 		}
 
-		$css_file = new Post_CSS_File( $post_id );
-		$css_file->enqueue();
+		if ( ! $this->_is_excerpt ) {
+			$css_file = new Post_CSS_File( $post_id );
+			$css_file->enqueue();
+		}
 
 		ob_start();
 
@@ -352,7 +365,7 @@ class Frontend {
 			$with_css = true;
 		}
 
-		if ( $with_css ) {
+		if ( ! empty( $css_file ) && $with_css ) {
 			echo '<style>' . $css_file->get_css() . '</style>';
 		}
 
@@ -430,6 +443,16 @@ class Frontend {
 		return $content;
 	}
 
+	public function start_excerpt_flag( $excerpt ) {
+		$this->_is_excerpt = true;
+		return $excerpt;
+	}
+
+	public function end_excerpt_flag( $excerpt ) {
+		$this->_is_excerpt = false;
+		return $excerpt;
+	}
+
 	public function __construct() {
 		// We don't need this class in admin side, but in AJAX requests
 		if ( is_admin() && ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
@@ -440,5 +463,9 @@ class Frontend {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ], 5 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_styles' ], 5 );
 		add_filter( 'the_content', [ $this, 'apply_builder_in_content' ] );
+
+		// Hack to avoid enqueue post css wail it's a `the_excerpt` call
+		add_filter( 'get_the_excerpt', [ $this, 'start_excerpt_flag' ], 1 );
+		add_filter( 'get_the_excerpt', [ $this, 'end_excerpt_flag' ], 20 );
 	}
 }
