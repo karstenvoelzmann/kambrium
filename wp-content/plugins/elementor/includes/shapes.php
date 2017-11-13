@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Shapes {
 	const FILTER_EXCLUDE = 'exclude';
@@ -10,6 +12,11 @@ class Shapes {
 
 	private static $shapes;
 
+	/**
+	 * @static
+	 * @since 1.3.0
+	 * @access public
+	*/
 	public static function get_shapes( $shape = null ) {
 		if ( null === self::$shapes ) {
 			self::init_shapes();
@@ -22,12 +29,24 @@ class Shapes {
 		return self::$shapes;
 	}
 
+	/**
+	 * @static
+	 * @since 1.3.0
+	 * @access public
+	*/
 	public static function filter_shapes( $by, $filter = self::FILTER_INCLUDE ) {
-		return array_filter( self::get_shapes(), function( $shape ) use ( $by, $filter ) {
-			return self::FILTER_INCLUDE === $filter xor empty( $shape[ $by ] );
-		} );
+		return array_filter(
+			self::get_shapes(), function( $shape ) use ( $by, $filter ) {
+				return self::FILTER_INCLUDE === $filter xor empty( $shape[ $by ] );
+			}
+		);
 	}
 
+	/**
+	 * @static
+	 * @since 1.3.0
+	 * @access public
+	*/
 	public static function get_shape_path( $shape, $is_negative = false ) {
 		$file_name = $shape;
 
@@ -38,6 +57,11 @@ class Shapes {
 		return ELEMENTOR_PATH . 'assets/shapes/' . $file_name . '.svg';
 	}
 
+	/**
+	 * @static
+	 * @since 1.3.0
+	 * @access private
+	*/
 	private static function init_shapes() {
 		self::$shapes = [
 			'mountains' => [

@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Group_Control_Background extends Group_Control_Base {
 
@@ -9,10 +11,20 @@ class Group_Control_Background extends Group_Control_Base {
 
 	private static $background_types;
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_type() {
 		return 'background';
 	}
 
+	/**
+	 * @static
+	 * @since 1.2.2
+	 * @access public
+	*/
 	public static function get_background_types() {
 		if ( null === self::$background_types ) {
 			self::$background_types = self::init_background_types();
@@ -21,12 +33,13 @@ class Group_Control_Background extends Group_Control_Base {
 		return self::$background_types;
 	}
 
+	/**
+	 * @static
+	 * @since 1.2.2
+	 * @access private
+	*/
 	private static function init_background_types() {
 		return [
-			'none' => [
-				'title' => _x( 'None', 'Background Control', 'elementor' ),
-				'icon' => 'fa fa-ban',
-			],
 			'classic' => [
 				'title' => _x( 'Classic', 'Background Control', 'elementor' ),
 				'icon' => 'fa fa-paint-brush',
@@ -42,13 +55,18 @@ class Group_Control_Background extends Group_Control_Base {
 		];
 	}
 
+	/**
+	 * @since 1.2.2
+	 * @access public
+	*/
 	public function init_fields() {
 		$fields = [];
 
 		$fields['background'] = [
 			'label' => _x( 'Background Type', 'Background Control', 'elementor' ),
 			'type' => Controls_Manager::CHOOSE,
-			'label_block' => true,
+			'label_block' => false,
+			'render_type' => 'ui',
 		];
 
 		$fields['color'] = [
@@ -292,12 +310,20 @@ class Group_Control_Background extends Group_Control_Base {
 		return $fields;
 	}
 
+	/**
+	 * @since 1.2.2
+	 * @access protected
+	*/
 	protected function get_child_default_args() {
 		return [
-			'types' => [ 'none', 'classic' ],
+			'types' => [ 'classic', 'gradient' ],
 		];
 	}
 
+	/**
+	 * @since 1.2.2
+	 * @access protected
+	*/
 	protected function filter_fields() {
 		$fields = parent::filter_fields();
 
@@ -312,6 +338,10 @@ class Group_Control_Background extends Group_Control_Base {
 		return $fields;
 	}
 
+	/**
+	 * @since 1.2.2
+	 * @access protected
+	*/
 	protected function prepare_fields( $fields ) {
 		$args = $this->get_args();
 

@@ -1,13 +1,18 @@
 <?php
 namespace Elementor;
 
+use Elementor\Core\Modules_Manager;
 use Elementor\Debug\Debug;
-use Elementor\PageSettings\Manager as PageSettingsManager;
+use Elementor\Core\Settings\Manager as SettingsManager;
+use Elementor\Core\Settings\Page\Manager as PageSettingsManager;
+use Elementor\Modules\History\Revisions_Manager;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
- * Main class plugin
+ * Main plugin class.
  */
 class Plugin {
 
@@ -67,6 +72,15 @@ class Plugin {
 	public $settings;
 
 	/**
+	 * @var Admin
+	 */
+	public $admin;
+	/**
+	 * @var Tools
+	 */
+	public $tools;
+
+	/**
 	 * @var Preview
 	 */
 	public $preview;
@@ -107,6 +121,23 @@ class Plugin {
 	public $posts_css_manager;
 
 	/**
+	 * @var WordPress_Widgets_Manager
+	 */
+	public $wordpress_widgets_manager;
+
+	/**
+	 * @var Modules_Manager
+	 */
+	private $modules_manager;
+
+	/**
+	 * @var Beta_Testers
+	 */
+	public $beta_testers;
+
+	/**
+	 * @since 1.0.0
+	 * @access public
 	 * @deprecated
 	 *
 	 * @return string
@@ -121,26 +152,31 @@ class Plugin {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function __clone() {
-		// Cloning instances of the class is forbidden
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'elementor' ), '1.0.0' );
+		// Cloning instances of the class is forbidden.
+		_doing_it_wrong( __FUNCTION__, esc_html__( 'Cheatin&#8217; huh?', 'elementor' ), '1.0.0' );
 	}
 
 	/**
 	 * Disable unserializing of the class
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function __wakeup() {
-		// Unserializing instances of the class is forbidden
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'elementor' ), '1.0.0' );
+		// Unserializing instances of the class is forbidden.
+		_doing_it_wrong( __FUNCTION__, esc_html__( 'Cheatin&#8217; huh?', 'elementor' ), '1.0.0' );
 	}
 
 	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
 	 * @return Plugin
 	 */
 	public static function instance() {
@@ -154,6 +190,8 @@ class Plugin {
 
 	/**
 	 * Register the CPTs with our Editor support.
+	 * @since 1.0.0
+	 * @access public
 	 */
 	public function init() {
 		$this->add_cpt_support();
@@ -163,86 +201,52 @@ class Plugin {
 		do_action( 'elementor/init' );
 	}
 
-	private function _includes() {
-		include( ELEMENTOR_PATH . 'includes/maintenance.php' );
-		include( ELEMENTOR_PATH . 'includes/upgrades.php' );
-		include( ELEMENTOR_PATH . 'includes/api.php' );
-		include( ELEMENTOR_PATH . 'includes/utils.php' );
-		include( ELEMENTOR_PATH . 'includes/user.php' );
-		include( ELEMENTOR_PATH . 'includes/fonts.php' );
-		include( ELEMENTOR_PATH . 'includes/compatibility.php' );
-
-		include( ELEMENTOR_PATH . 'includes/db.php' );
-		include( ELEMENTOR_PATH . 'includes/base/controls-stack.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/controls.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/schemes.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/elements.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/widgets.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/skins.php' );
-		include( ELEMENTOR_PATH . 'includes/settings/settings.php' );
-		include( ELEMENTOR_PATH . 'includes/settings/tools.php' );
-		include( ELEMENTOR_PATH . 'includes/editor.php' );
-		include( ELEMENTOR_PATH . 'includes/preview.php' );
-		include( ELEMENTOR_PATH . 'includes/frontend.php' );
-		include( ELEMENTOR_PATH . 'includes/heartbeat.php' );
-		include( ELEMENTOR_PATH . 'includes/responsive.php' );
-		include( ELEMENTOR_PATH . 'includes/stylesheet.php' );
-
-		include( ELEMENTOR_PATH . 'includes/settings/system-info/main.php' );
-		include( ELEMENTOR_PATH . 'includes/tracker.php' );
-		include( ELEMENTOR_PATH . 'includes/template-library/manager.php' );
-
-		include( ELEMENTOR_PATH . 'includes/managers/css-files.php' );
-		include( ELEMENTOR_PATH . 'includes/managers/revisions.php' );
-		include( ELEMENTOR_PATH . 'includes/page-settings/manager.php' );
-		include( ELEMENTOR_PATH . 'includes/css-file/css-file.php' );
-		include( ELEMENTOR_PATH . 'includes/css-file/post-css-file.php' );
-		include( ELEMENTOR_PATH . 'includes/css-file/global-css-file.php' );
-		include( ELEMENTOR_PATH . 'includes/conditions.php' );
-		include( ELEMENTOR_PATH . 'includes/shapes.php' );
-		include( ELEMENTOR_PATH . 'includes/debug/debug.php' );
-		include( ELEMENTOR_PATH . 'includes/maintenance-mode.php' );
-
-		if ( is_admin() ) {
-			include( ELEMENTOR_PATH . 'includes/admin.php' );
-
-			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-				include( ELEMENTOR_PATH . 'includes/managers/image.php' );
-			}
-		}
-	}
-
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function init_components() {
-		$this->db = new DB();
+		Compatibility::register_actions();
+		SettingsManager::run();
 
+		$this->db = new DB();
 		$this->controls_manager = new Controls_Manager();
 		$this->schemes_manager = new Schemes_Manager();
 		$this->elements_manager = new Elements_Manager();
 		$this->widgets_manager = new Widgets_Manager();
 		$this->skins_manager = new Skins_Manager();
 		$this->posts_css_manager = new Posts_CSS_Manager();
-		$this->revisions_manager = new Revisions_Manager();
-		$this->page_settings_manager = new PageSettingsManager();
-
 		$this->settings = new Settings();
 		$this->editor = new Editor();
 		$this->preview = new Preview();
 		$this->frontend = new Frontend();
 		$this->debug = new Debug();
-
-		$this->heartbeat = new Heartbeat();
-		$this->system_info = new System_Info\Main();
-
 		$this->templates_manager = new TemplateLibrary\Manager();
-
 		$this->maintenance_mode = new Maintenance_Mode();
+		$this->modules_manager = new Modules_Manager();
+
+		Api::init();
+		Tracker::init();
 
 		if ( is_admin() ) {
-			new Admin();
-			new Tools();
+			$this->revisions_manager = new Revisions_Manager();
+			$this->heartbeat = new Heartbeat();
+			$this->wordpress_widgets_manager = new WordPress_Widgets_Manager();
+			$this->system_info = new System_Info\Main();
+			$this->admin = new Admin();
+			$this->tools = new Tools();
+			$this->beta_testers = new Beta_Testers();
+
+			if ( Utils::is_ajax() ) {
+				new Images_Manager();
+			}
 		}
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function add_cpt_support() {
 		$cpt_support = get_option( 'elementor_cpt_support', [ 'page', 'post' ] );
 
@@ -252,12 +256,24 @@ class Plugin {
 	}
 
 	/**
+	 * @since 1.6.0
+	 * @access private
+	*/
+	private function register_autoloader() {
+		require ELEMENTOR_PATH . '/includes/autoloader.php';
+
+		Autoloader::run();
+	}
+
+	/**
 	 * Plugin constructor.
+	 * @since 1.0.0
+	 * @access private
 	 */
 	private function __construct() {
-		add_action( 'init', [ $this, 'init' ], 0 );
+		$this->register_autoloader();
 
-		$this->_includes();
+		add_action( 'init', [ $this, 'init' ], 0 );
 	}
 }
 

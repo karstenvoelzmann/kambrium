@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Stylesheet {
 
@@ -21,6 +23,9 @@ class Stylesheet {
 	private $raw = [];
 
 	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
 	 * @param array $rules
 	 *
 	 * @return string
@@ -40,6 +45,9 @@ class Stylesheet {
 	}
 
 	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
 	 * @param array $properties
 	 *
 	 * @return string
@@ -57,6 +65,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.0.0
+	 * @access public
 	 * @param string $device_name
 	 * @param string $device_max_point
 	 *
@@ -71,9 +81,11 @@ class Stylesheet {
 	}
 
 	/**
-	 * @param string $selector
+	 * @since 1.0.0
+	 * @access public
+	 * @param string       $selector
 	 * @param array|string $style_rules
-	 * @param array $query
+	 * @param array        $query
 	 *
 	 * @return $this
 	 */
@@ -110,6 +122,10 @@ class Stylesheet {
 			foreach ( $style_rules as $rule ) {
 				$property = explode( ':', $rule, 2 );
 
+				if ( count( $property ) < 2 ) {
+					return $this;
+				}
+
 				$ordered_rules[ trim( $property[0] ) ] = trim( $property[1], ' ;' );
 			}
 
@@ -122,6 +138,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.0.8
+	 * @access public
 	 * @param string $css
 	 * @param string $device
 	 *
@@ -138,6 +156,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.0.5
+	 * @access public
 	 * @param string $device
 	 * @param string $selector
 	 * @param string $property
@@ -160,6 +180,10 @@ class Stylesheet {
 		return isset( $this->rules[ $device ] ) ? $this->rules[ $device ] : null;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function __toString() {
 		$style_text = '';
 
@@ -187,6 +211,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access private
 	 * @param string $device_name
 	 *
 	 * @return int
@@ -206,6 +232,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access private
 	 * @param array $query
 	 *
 	 * @return string
@@ -221,6 +249,8 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access private
 	 * @param string $hash
 	 *
 	 * @return array
@@ -244,37 +274,43 @@ class Stylesheet {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access private
 	 * @param string $query_hash
 	 */
 	private function add_query_hash( $query_hash ) {
 		$this->rules[ $query_hash ] = [];
 
-		uksort( $this->rules, function ( $a, $b ) {
-			if ( 'all' === $a ) {
-				return -1;
+		uksort(
+			$this->rules, function( $a, $b ) {
+				if ( 'all' === $a ) {
+					return -1;
+				}
+
+				if ( 'all' === $b ) {
+					return 1;
+				}
+
+				$a_query = $this->hash_to_query( $a );
+
+				$b_query = $this->hash_to_query( $b );
+
+				if ( isset( $a_query['min'] ) xor isset( $b_query['min'] ) ) {
+					return 1;
+				}
+
+				if ( isset( $a_query['min'] ) ) {
+					return $a_query['min'] - $b_query['min'];
+				}
+
+				return $b_query['max'] - $a_query['max'];
 			}
-
-			if ( 'all' === $b ) {
-				return 1;
-			}
-
-			$a_query = $this->hash_to_query( $a );
-
-			$b_query = $this->hash_to_query( $b );
-
-			if ( isset( $a_query['min'] ) xor isset( $b_query['min'] ) ) {
-				return 1;
-			}
-
-			if ( isset( $a_query['min'] ) ) {
-				return $a_query['min'] - $b_query['min'];
-			}
-
-			return $b_query['max'] - $a_query['max'];
-		} );
+		);
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access private
 	 * @param string $query_hash
 	 *
 	 * @return string

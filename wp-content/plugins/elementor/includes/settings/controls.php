@@ -1,13 +1,21 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Settings_Controls {
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function render( $field = [] ) {
-		if ( empty( $field ) || empty( $field['id'] ) )
+		if ( empty( $field ) || empty( $field['id'] ) ) {
 			return;
+		}
 
 		$defaults = [
 			'type' => '',
@@ -28,35 +36,62 @@ class Settings_Controls {
 		self::$method_name( $field );
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _text( array $field ) {
 		if ( empty( $field['classes'] ) ) {
 			$field['classes'] = [ 'regular-text' ];
 		}
 		?>
 		<input type="<?php echo esc_attr( $field['type'] ); ?>" class="<?php echo esc_attr( implode( ' ', $field['classes'] ) ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['id'] ); ?>" value="<?php echo esc_attr( get_option( $field['id'], $field['std'] ) ); ?>"<?php echo ! empty( $field['placeholder'] ) ? ' placeholder="' . $field['placeholder'] . '"' : ''; ?> />
-		<?php if ( ! empty( $field['sub_desc'] ) ) echo $field['sub_desc']; ?>
+		<?php
+		if ( ! empty( $field['sub_desc'] ) ) :
+			echo $field['sub_desc'];
+		endif;
+		?>
 		<?php if ( ! empty( $field['desc'] ) ) : ?>
 			<p class="description"><?php echo $field['desc']; ?></p>
-		<?php endif;
+		<?php
+		endif;
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _checkbox( array $field ) {
 		?>
 		<label>
 			<input type="<?php echo esc_attr( $field['type'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['id'] ); ?>" value="<?php echo $field['value']; ?>"<?php checked( $field['value'], get_option( $field['id'], $field['std'] ) ); ?> />
-			<?php if ( ! empty( $field['sub_desc'] ) ) echo $field['sub_desc']; ?>
+			<?php
+			if ( ! empty( $field['sub_desc'] ) ) :
+				echo $field['sub_desc'];
+			endif;
+			?>
 		</label>
 		<?php if ( ! empty( $field['desc'] ) ) : ?>
 			<p class="description"><?php echo $field['desc']; ?></p>
-		<?php endif;
+		<?php
+		endif;
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _checkbox_list( array $field ) {
 		$old_value = get_option( $field['id'], $field['std'] );
-		if ( ! is_array( $old_value ) )
+		if ( ! is_array( $old_value ) ) {
 			$old_value = [];
+		}
 
-		foreach ( $field['options'] as $option_key => $option_value ) : ?>
+		foreach ( $field['options'] as $option_key => $option_value ) :
+		?>
 			<label>
 				<input type="checkbox" name="<?php echo $field['id']; ?>[]" value="<?php echo $option_key; ?>"<?php checked( in_array( $option_key, $old_value ), true ); ?> />
 				<?php echo $option_value; ?>
@@ -64,11 +99,18 @@ class Settings_Controls {
 		<?php endforeach; ?>
 		<?php if ( ! empty( $field['desc'] ) ) : ?>
 			<p class="description"><?php echo $field['desc']; ?></p>
-		<?php endif;
+		<?php
+		endif;
 	}
 
+	/**
+	 * @static
+	 * @since 1.4.0
+	 * @access private
+	*/
 	private static function _select( array $field ) {
-		$old_value = get_option( $field['id'], $field['std'] ); ?>
+		$old_value = get_option( $field['id'], $field['std'] );
+		?>
 		<select name="<?php echo esc_attr( $field['id'] ); ?>">
 			<?php if ( ! empty( $field['show_select'] ) ) : ?>
 				<option value="">— <?php _e( 'Select', 'elementor' ); ?> —</option>
@@ -81,20 +123,31 @@ class Settings_Controls {
 
 		<?php if ( ! empty( $field['desc'] ) ) : ?>
 			<p class="description"><?php echo $field['desc']; ?></p>
-		<?php endif;
+		<?php
+		endif;
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _checkbox_list_cpt( array $field ) {
 		$defaults = [
 			'exclude' => [],
 		];
 		$field = array_merge( $defaults, $field );
 
-		$post_types_objects = get_post_types( [ 'public' => true ], 'objects' );
+		$post_types_objects = get_post_types(
+			[
+				'public' => true,
+			], 'objects'
+		);
 		$field['options'] = [];
 		foreach ( $post_types_objects as $cpt_slug => $post_type ) {
-			if ( in_array( $cpt_slug, $field['exclude'] ) )
+			if ( in_array( $cpt_slug, $field['exclude'] ) ) {
 				continue;
+			}
 
 			$field['options'][ $cpt_slug ] = $post_type->labels->name;
 		}
@@ -102,6 +155,11 @@ class Settings_Controls {
 		self::_checkbox_list( $field );
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _checkbox_list_roles( array $field ) {
 		$defaults = [
 			'exclude' => [],
@@ -110,8 +168,9 @@ class Settings_Controls {
 
 		$field['options'] = [];
 		foreach ( get_editable_roles() as $role_slug => $role_data ) {
-			if ( in_array( $role_slug, $field['exclude'] ) )
+			if ( in_array( $role_slug, $field['exclude'] ) ) {
 				continue;
+			}
 
 			$field['options'][ $role_slug ] = $role_data['name'];
 		}
@@ -119,14 +178,24 @@ class Settings_Controls {
 		self::_checkbox_list( $field );
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private static function _raw_html( array $field ) {
-		if ( empty( $field['html'] ) )
+		if ( empty( $field['html'] ) ) {
 			return;
+		}
 		?>
-		<div id="<?php echo $field['id'];?>">
+		<div id="<?php echo $field['id']; ?>">
 
 			<div><?php echo $field['html']; ?></div>
-			<?php if ( ! empty( $field['sub_desc'] ) ) echo $field['sub_desc']; ?>
+			<?php
+			if ( ! empty( $field['sub_desc'] ) ) :
+				echo $field['sub_desc'];
+			endif;
+			?>
 			<?php if ( ! empty( $field['desc'] ) ) : ?>
 				<p class="description"><?php echo $field['desc']; ?></p>
 			<?php endif; ?>

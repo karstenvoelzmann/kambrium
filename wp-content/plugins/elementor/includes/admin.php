@@ -1,13 +1,16 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Admin {
 
 	/**
 	 * Enqueue admin scripts.
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @return void
 	 */
@@ -20,7 +23,7 @@ class Admin {
 			[
 				'jquery-ui-position',
 			],
-			'3.0.2',
+			'3.2.5',
 			true
 		);
 
@@ -39,6 +42,12 @@ class Admin {
 			'ElementorAdminConfig',
 			[
 				'home_url' => home_url(),
+				'i18n' => [
+					'rollback_confirm' => __( 'Are you sure you want to reinstall previous version?', 'elementor' ),
+					'rollback_to_previous_version' => __( 'Rollback to Previous Version', 'elementor' ),
+					'yes' => __( 'Yes', 'elementor' ),
+					'cancel' => __( 'Cancel', 'elementor' ),
+				],
 			]
 		);
 
@@ -49,15 +58,12 @@ class Admin {
 
 			$this->enqueue_feedback_dialog_scripts();
 		}
-
-		if ( 'elementor_page_elementor-tools' === get_current_screen()->id ) {
-			wp_enqueue_script( 'elementor-dialog' );
-		}
 	}
 
 	/**
 	 * Enqueue admin styles.
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @return void
 	 */
@@ -84,14 +90,15 @@ class Admin {
 
 		wp_enqueue_style( 'elementor-admin-app' );
 
-		// It's for upgrade notice
-		// TODO: enqueue this just if needed
+		// It's for upgrade notice.
+		// TODO: enqueue this just if needed.
 		add_thickbox();
 	}
 
 	/**
 	 * Print switch button in edit post (which has cpt support).
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @param $post
 	 *
@@ -102,15 +109,10 @@ class Admin {
 			return;
 		}
 
-		$current_mode = Plugin::$instance->db->get_edit_mode( $post->ID );
-		if ( 'builder' !== $current_mode ) {
-			$current_mode = 'editor';
-		}
-
 		wp_nonce_field( basename( __FILE__ ), '_elementor_edit_mode_nonce' );
 		?>
 		<div id="elementor-switch-mode">
-			<input id="elementor-switch-mode-input" type="hidden" name="_elementor_post_mode" value="<?php echo $current_mode; ?>" />
+			<input id="elementor-switch-mode-input" type="hidden" name="_elementor_post_mode" value="<?php echo Plugin::$instance->db->is_built_with_elementor( $post->ID ); ?>" />
 			<button id="elementor-switch-mode-button" class="elementor-button button button-primary button-hero">
 				<span class="elementor-switch-mode-on"><?php _e( '&#8592; Back to WordPress Editor', 'elementor' ); ?></span>
 				<span class="elementor-switch-mode-off">
@@ -120,21 +122,21 @@ class Admin {
 			</button>
 		</div>
 		<div id="elementor-editor">
-	        <a id="elementor-go-to-edit-page-link" href="<?php echo Utils::get_edit_link( $post->ID ); ?>">
-		        <div id="elementor-editor-button" class="elementor-button button button-primary button-hero">
-			        <i class="eicon-elementor"></i>
+			<a id="elementor-go-to-edit-page-link" href="<?php echo Utils::get_edit_link( $post->ID ); ?>">
+				<div id="elementor-editor-button" class="elementor-button button button-primary button-hero">
+					<i class="eicon-elementor"></i>
 					<?php _e( 'Edit with Elementor', 'elementor' ); ?>
-		        </div>
-		        <div class="elementor-loader-wrapper">
-			        <div class="elementor-loader">
-				        <div class="elementor-loader-box"></div>
-				        <div class="elementor-loader-box"></div>
-				        <div class="elementor-loader-box"></div>
-				        <div class="elementor-loader-box"></div>
-			        </div>
-			        <div class="elementor-loading-title"><?php _e( 'Loading', 'elementor' ); ?></div>
-		        </div>
-	        </a>
+				</div>
+				<div class="elementor-loader-wrapper">
+					<div class="elementor-loader">
+						<div class="elementor-loader-box"></div>
+						<div class="elementor-loader-box"></div>
+						<div class="elementor-loader-box"></div>
+						<div class="elementor-loader-box"></div>
+					</div>
+					<div class="elementor-loading-title"><?php _e( 'Loading', 'elementor' ); ?></div>
+				</div>
+			</a>
 		</div>
 		<?php
 	}
@@ -142,6 +144,7 @@ class Admin {
 	/**
 	 * Fired when the save the post, and flag the post mode.
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @param $post_id
 	 *
@@ -156,20 +159,13 @@ class Admin {
 			return;
 		}
 
-		// Exit when you don't have $_POST array.
-		if ( empty( $_POST ) ) {
-			return;
-		}
-
-		if ( ! isset( $_POST['_elementor_post_mode'] ) )
-			$_POST['_elementor_post_mode'] = '';
-
-		Plugin::$instance->db->set_edit_mode( $post_id, $_POST['_elementor_post_mode'] );
+		Plugin::$instance->db->set_is_elementor_page( $post_id, ! empty( $_POST['_elementor_post_mode'] ) );
 	}
 
 	/**
 	 * Add edit link in outside edit post.
 	 *
+	 * @access public
 	 * @since 1.0.0
 	 * @param $actions
 	 * @param $post
@@ -177,7 +173,7 @@ class Admin {
 	 * @return array
 	 */
 	public function add_edit_in_dashboard( $actions, $post ) {
-		if ( User::is_current_user_can_edit( $post->ID ) && 'builder' === Plugin::$instance->db->get_edit_mode( $post->ID ) ) {
+		if ( User::is_current_user_can_edit( $post->ID ) && Plugin::$instance->db->is_built_with_elementor( $post->ID ) ) {
 			$actions['edit_with_elementor'] = sprintf(
 				'<a href="%s">%s</a>',
 				Utils::get_edit_link( $post->ID ),
@@ -188,14 +184,35 @@ class Admin {
 		return $actions;
 	}
 
+	/**
+	 * Adds a "Elementor" post state for post table.
+	 *
+	 * @access public
+	 * @since 1.8.0
+	 *
+	 * @param  array    $post_states An array of post display states.
+	 * @param  \WP_Post $post        The current post object.
+	 *
+	 * @return array                 A filtered array of post display states.
+	 */
+	public function add_elementor_post_state( $post_states, $post ) {
+		if ( User::is_current_user_can_edit( $post->ID ) && Plugin::$instance->db->is_built_with_elementor( $post->ID ) ) {
+			$post_states['elementor'] = __( 'Elementor', 'elementor' );
+		}
+		return $post_states;
+	}
+
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function body_status_classes( $classes ) {
 		global $pagenow;
 
 		if ( in_array( $pagenow, [ 'post.php', 'post-new.php' ] ) && Utils::is_post_type_support() ) {
 			$post = get_post();
-			$current_mode = Plugin::$instance->db->get_edit_mode( $post->ID );
 
-			$mode_class = 'builder' === $current_mode ? 'elementor-editor-active' : 'elementor-editor-inactive';
+			$mode_class = Plugin::$instance->db->is_built_with_elementor( $post->ID ) ? 'elementor-editor-active' : 'elementor-editor-inactive';
 
 			$classes .= ' ' . $mode_class;
 		}
@@ -203,16 +220,24 @@ class Admin {
 		return $classes;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function plugin_action_links( $links ) {
 		$settings_link = sprintf( '<a href="%s">%s</a>', admin_url( 'admin.php?page=' . Settings::PAGE_ID ), __( 'Settings', 'elementor' ) );
 
 		array_unshift( $links, $settings_link );
 
-		$links['go_pro'] = sprintf( '<a href="%s" target="_blank" class="elementor-plugins-gopro">%s</a>', 'https://go.elementor.com/pro-admin-plugins/', __( 'Go Pro', 'elementor' ) );
+		$links['go_pro'] = sprintf( '<a href="%s" target="_blank" class="elementor-plugins-gopro">%s</a>', Utils::get_pro_link( 'https://elementor.com/pro/?utm_source=wp-plugins&utm_campaign=gopro&utm_medium=wp-dash' ), __( 'Go Pro', 'elementor' ) );
 
 		return $links;
 	}
 
+	/**
+	 * @since 1.1.4
+	 * @access public
+	*/
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
 		if ( ELEMENTOR_PLUGIN_BASE === $plugin_file ) {
 			$row_meta = [
@@ -226,32 +251,40 @@ class Admin {
 		return $plugin_meta;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function admin_notices() {
 		$upgrade_notice = Api::get_upgrade_notice();
-		if ( empty( $upgrade_notice ) )
+		if ( empty( $upgrade_notice ) ) {
 			return;
+		}
 
-		if ( ! current_user_can( 'update_plugins' ) )
+		if ( ! current_user_can( 'update_plugins' ) ) {
 			return;
+		}
 
 		if ( ! in_array( get_current_screen()->id, [ 'toplevel_page_elementor', 'edit-elementor_library', 'elementor_page_elementor-system-info', 'dashboard' ] ) ) {
 			return;
 		}
 
-		// Check if have any upgrades
+		// Check if have any upgrades.
 		$update_plugins = get_site_transient( 'update_plugins' );
 		if ( empty( $update_plugins ) || empty( $update_plugins->response[ ELEMENTOR_PLUGIN_BASE ] ) || empty( $update_plugins->response[ ELEMENTOR_PLUGIN_BASE ]->package ) ) {
 			return;
 		}
 		$product = $update_plugins->response[ ELEMENTOR_PLUGIN_BASE ];
 
-		// Check if have upgrade notices to show
-		if ( version_compare( ELEMENTOR_VERSION, $upgrade_notice['version'], '>=' ) )
+		// Check if have upgrade notices to show.
+		if ( version_compare( ELEMENTOR_VERSION, $upgrade_notice['version'], '>=' ) ) {
 			return;
+		}
 
 		$notice_id = 'upgrade_notice_' . $upgrade_notice['version'];
-		if ( User::is_user_notice_viewed( $notice_id ) )
+		if ( User::is_user_notice_viewed( $notice_id ) ) {
 			return;
+		}
 
 		$details_url = self_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $product->slug . '&section=changelog&TB_iframe=true&width=600&height=800' );
 		$upgrade_url = wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . ELEMENTOR_PLUGIN_BASE ), 'upgrade-plugin_' . ELEMENTOR_PLUGIN_BASE );
@@ -262,8 +295,9 @@ class Admin {
 					<i class="eicon-elementor-square"></i>
 				</div>
 				<div class="elementor-message-content">
-					<h3><?php _e( 'New in Elementor', 'elementor' ); ?></h3>
-					<p><?php
+					<strong><?php _e( 'Update Notification', 'elementor' ); ?></strong>
+					<p>
+					<?php
 						printf(
 							/* translators: 1: details URL, 2: accessibility text, 3: version number, 4: update URL, 5: accessibility text */
 							__( 'There is a new version of Elementor Page Builder available. <a href="%1$s" class="thickbox open-plugin-details-modal" aria-label="%2$s">View version %3$s details</a> or <a href="%4$s" class="update-link" aria-label="%5$s">update now</a>.', 'elementor' ),
@@ -279,9 +313,10 @@ class Admin {
 							esc_url( $upgrade_url ),
 							esc_attr( __( 'Update Now', 'elementor' ) )
 						);
-						?></p>
+						?>
+					</p>
 				</div>
-				<div class="elementor-update-now">
+				<div class="elementor-message-action">
 					<a class="button elementor-button" href="<?php echo $upgrade_url; ?>"><i class="dashicons dashicons-update"></i><?php _e( 'Update Now', 'elementor' ); ?></a>
 				</div>
 			</div>
@@ -289,6 +324,10 @@ class Admin {
 		<?php
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function admin_footer_text( $footer_text ) {
 		$current_screen = get_current_screen();
 		$is_elementor_screen = ( $current_screen && false !== strpos( $current_screen->base, 'elementor' ) );
@@ -304,6 +343,10 @@ class Admin {
 		return $footer_text;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function enqueue_feedback_dialog_scripts() {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -334,6 +377,10 @@ class Admin {
 		);
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function print_deactivate_feedback_dialog() {
 		$deactivate_reasons = [
 			'no_longer_needed' => [
@@ -387,6 +434,10 @@ class Admin {
 		<?php
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function ajax_elementor_deactivate_feedback() {
 		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], '_elementor_deactivate_feedback_nonce' ) ) {
 			wp_send_json_error();
@@ -396,11 +447,13 @@ class Admin {
 
 		$reason_key = '';
 
-		if ( ! empty( $_POST['reason_key'] ) )
+		if ( ! empty( $_POST['reason_key'] ) ) {
 			$reason_key = $_POST['reason_key'];
+		}
 
-		if ( ! empty( $_POST[ "reason_{$reason_key}" ] ) )
+		if ( ! empty( $_POST[ "reason_{$reason_key}" ] ) ) {
 			$reason_text = $_POST[ "reason_{$reason_key}" ];
+		}
 
 		Api::send_feedback( $reason_key, $reason_text );
 
@@ -409,6 +462,8 @@ class Admin {
 
 	/**
 	 * Admin constructor.
+	 * @since 1.0.0
+	 * @access public
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -420,6 +475,8 @@ class Admin {
 		add_filter( 'page_row_actions', [ $this, 'add_edit_in_dashboard' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_edit_in_dashboard' ], 10, 2 );
 
+		add_filter( 'display_post_states', [ $this, 'add_elementor_post_state' ], 10, 2 );
+
 		add_filter( 'plugin_action_links_' . ELEMENTOR_PLUGIN_BASE, [ $this, 'plugin_action_links' ] );
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 2 );
 
@@ -427,7 +484,7 @@ class Admin {
 		add_filter( 'admin_body_class', [ $this, 'body_status_classes' ] );
 		add_filter( 'admin_footer_text', [ $this, 'admin_footer_text' ] );
 
-		// Ajax
+		// Ajax.
 		add_action( 'wp_ajax_elementor_deactivate_feedback', [ $this, 'ajax_elementor_deactivate_feedback' ] );
 	}
 }

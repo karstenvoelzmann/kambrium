@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Schemes_Manager {
 
@@ -13,27 +15,26 @@ class Schemes_Manager {
 	private static $_enabled_schemes;
 
 	private static $_schemes_types = [
-		'color',
-		'typography',
-		'color-picker',
+		'color' => 'Scheme_Color',
+		'typography' => 'Scheme_Typography',
+		'color-picker' => 'Scheme_Color_Picker',
 	];
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function register_scheme( $scheme_class ) {
-		if ( ! class_exists( $scheme_class ) ) {
-			return new \WP_Error( 'scheme_class_name_not_exists' );
-		}
-
+		/** @var Scheme_Base $scheme_instance */
 		$scheme_instance = new $scheme_class();
 
-		if ( ! $scheme_instance instanceof Scheme_Base ) {
-			return new \WP_Error( 'wrong_instance_scheme' );
-		}
-
 		$this->_registered_schemes[ $scheme_instance::get_type() ] = $scheme_instance;
-
-		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function unregister_scheme( $id ) {
 		if ( ! isset( $this->_registered_schemes[ $id ] ) ) {
 			return false;
@@ -42,10 +43,18 @@ class Schemes_Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_registered_schemes() {
 		return $this->_registered_schemes;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_registered_schemes_data() {
 		$data = [];
 
@@ -60,6 +69,10 @@ class Schemes_Manager {
 		return $data;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_schemes_defaults() {
 		$data = [];
 
@@ -73,6 +86,10 @@ class Schemes_Manager {
 		return $data;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_system_schemes() {
 		$data = [];
 
@@ -83,6 +100,10 @@ class Schemes_Manager {
 		return $data;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_scheme( $id ) {
 		$schemes = $this->get_registered_schemes();
 
@@ -92,16 +113,25 @@ class Schemes_Manager {
 		return $schemes[ $id ];
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_scheme_value( $scheme_type, $scheme_value ) {
 		$scheme = $this->get_scheme( $scheme_type );
-		if ( ! $scheme )
+		if ( ! $scheme ) {
 			return false;
+		}
 
 		return $scheme->get_scheme_value()[ $scheme_value ];
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function ajax_apply_scheme() {
-		if ( empty( $_POST['_nonce'] ) || ! wp_verify_nonce( $_POST['_nonce'], 'elementor-editing' ) ) {
+		if ( ! Plugin::$instance->editor->verify_request_nonce() ) {
 			wp_send_json_error( new \WP_Error( 'token_expired' ) );
 		}
 
@@ -119,17 +149,26 @@ class Schemes_Manager {
 		wp_send_json_success();
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function print_schemes_templates() {
 		foreach ( $this->get_registered_schemes() as $scheme ) {
 			$scheme->print_template();
 		}
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_enabled_schemes() {
 		if ( null === self::$_enabled_schemes ) {
 			$enabled_schemes = [];
 
-			foreach ( self::$_schemes_types as $schemes_type ) {
+			foreach ( self::$_schemes_types as $schemes_type => $scheme_class ) {
 				if ( 'yes' === get_option( 'elementor_disable_' . $schemes_type . '_schemes' ) ) {
 					continue;
 				}
@@ -140,18 +179,20 @@ class Schemes_Manager {
 		return self::$_enabled_schemes;
 	}
 
+	/**
+	 * @since 1.7.12
+	 * @access private
+	*/
 	private function register_default_schemes() {
-		include( ELEMENTOR_PATH . 'includes/interfaces/scheme.php' );
-
-		include( ELEMENTOR_PATH . 'includes/schemes/base.php' );
-
-		foreach ( self::$_schemes_types as $schemes_type ) {
-			include( ELEMENTOR_PATH . 'includes/schemes/' . $schemes_type . '.php' );
-
-			$this->register_scheme( __NAMESPACE__ . '\Scheme_' . ucfirst( str_replace( '-', '_', $schemes_type ) ) );
+		foreach ( self::$_schemes_types as $schemes_class ) {
+			$this->register_scheme( __NAMESPACE__ . '\\' . $schemes_class );
 		}
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function __construct() {
 		$this->register_default_schemes();
 

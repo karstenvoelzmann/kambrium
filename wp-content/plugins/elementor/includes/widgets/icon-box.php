@@ -1,26 +1,73 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
+/**
+ * Icon Box Widget
+ */
 class Widget_Icon_Box extends Widget_Base {
 
+	/**
+	 * Retrieve icon box widget name.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget name.
+	 */
 	public function get_name() {
 		return 'icon-box';
 	}
 
+	/**
+	 * Retrieve icon box widget title.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget title.
+	 */
 	public function get_title() {
 		return __( 'Icon Box', 'elementor' );
 	}
 
+	/**
+	 * Retrieve icon box widget icon.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget icon.
+	 */
 	public function get_icon() {
 		return 'eicon-icon-box';
 	}
 
+	/**
+	 * Retrieve the list of categories the icon box widget belongs to.
+	 *
+	 * Used to determine where to display the widget in the editor.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return array Widget categories.
+	 */
 	public function get_categories() {
 		return [ 'general-elements' ];
 	}
 
+	/**
+	 * Register icon box widget controls.
+	 *
+	 * Adds different input fields to allow the user to change and customize the widget settings.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function _register_controls() {
 		$this->start_controls_section(
 			'section_icon',
@@ -193,7 +240,7 @@ class Widget_Icon_Box extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'icon_space',
 			[
 				'label' => __( 'Spacing', 'elementor' ),
@@ -211,11 +258,12 @@ class Widget_Icon_Box extends Widget_Base {
 					'{{WRAPPER}}.elementor-position-right .elementor-icon-box-icon' => 'margin-left: {{SIZE}}{{UNIT}};',
 					'{{WRAPPER}}.elementor-position-left .elementor-icon-box-icon' => 'margin-right: {{SIZE}}{{UNIT}};',
 					'{{WRAPPER}}.elementor-position-top .elementor-icon-box-icon' => 'margin-bottom: {{SIZE}}{{UNIT}};',
+					'(mobile){{WRAPPER}} .elementor-icon-box-icon' => 'margin-bottom: {{SIZE}}{{UNIT}};',
 				],
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'icon_size',
 			[
 				'label' => __( 'Size', 'elementor' ),
@@ -485,6 +533,14 @@ class Widget_Icon_Box extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/**
+	 * Render icon box widget output on the frontend.
+	 *
+	 * Written in PHP and used to generate the final HTML.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function render() {
 		$settings = $this->get_settings();
 
@@ -496,8 +552,12 @@ class Widget_Icon_Box extends Widget_Base {
 			$this->add_render_attribute( 'link', 'href', $settings['link']['url'] );
 			$icon_tag = 'a';
 
-			if ( ! empty( $settings['link']['is_external'] ) ) {
+			if ( $settings['link']['is_external'] ) {
 				$this->add_render_attribute( 'link', 'target', '_blank' );
+			}
+
+			if ( $settings['link']['nofollow'] ) {
+				$this->add_render_attribute( 'link', 'rel', 'nofollow' );
 			}
 		}
 
@@ -505,40 +565,54 @@ class Widget_Icon_Box extends Widget_Base {
 
 		$icon_attributes = $this->get_render_attribute_string( 'icon' );
 		$link_attributes = $this->get_render_attribute_string( 'link' );
+
+		$this->add_render_attribute( 'description_text', 'class', 'elementor-icon-box-description' );
+
+		$this->add_inline_editing_attributes( 'title_text', 'none' );
+
+		$this->add_inline_editing_attributes( 'description_text' );
 		?>
-		<div class="elementor-icon-box-wrapper">
-			<div class="elementor-icon-box-icon">
-				<<?php echo implode( ' ', [ $icon_tag, $icon_attributes, $link_attributes ] ); ?>>
-					<i <?php echo $this->get_render_attribute_string( 'i' ); ?>></i>
-				</<?php echo $icon_tag; ?>>
-			</div>
-			<div class="elementor-icon-box-content">
-				<<?php echo $settings['title_size']; ?> class="elementor-icon-box-title">
-					<<?php echo implode( ' ', [ $icon_tag, $link_attributes ] ); ?>><?php echo $settings['title_text']; ?></<?php echo $icon_tag; ?>>
-				</<?php echo $settings['title_size']; ?>>
-				<p class="elementor-icon-box-description"><?php echo $settings['description_text']; ?></p>
-			</div>
-		</div>
+        <div class="elementor-icon-box-wrapper">
+            <div class="elementor-icon-box-icon">
+                <<?php echo implode( ' ', [ $icon_tag, $icon_attributes, $link_attributes ] ); ?>>
+                    <i <?php echo $this->get_render_attribute_string( 'i' ); ?>></i>
+                </<?php echo $icon_tag; ?>>
+            </div>
+            <div class="elementor-icon-box-content">
+                <<?php echo $settings['title_size']; ?> class="elementor-icon-box-title">
+                    <<?php echo implode( ' ', [ $icon_tag, $link_attributes ] ); ?> <?php echo $this->get_render_attribute_string( 'title_text' ); ?>><?php echo $settings['title_text']; ?></<?php echo $icon_tag; ?>>
+                </<?php echo $settings['title_size']; ?>>
+                <p <?php echo $this->get_render_attribute_string( 'description_text' ); ?>><?php echo $settings['description_text']; ?></p>
+            </div>
+        </div>
 		<?php
 	}
 
+	/**
+	 * Render icon box widget output in the editor.
+	 *
+	 * Written as a Backbone JavaScript template and used to generate the live preview.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function _content_template() {
 		?>
-		<# var link = settings.link.url ? 'href="' + settings.link.url + '"' : '',
-				iconTag = link ? 'a' : 'span'; #>
-		<div class="elementor-icon-box-wrapper">
-			<div class="elementor-icon-box-icon">
-				<{{{ iconTag + ' ' + link }}} class="elementor-icon elementor-animation-{{ settings.hover_animation }}">
-					<i class="{{ settings.icon }}"></i>
-				</{{{ iconTag }}}>
-			</div>
-			<div class="elementor-icon-box-content">
-				<{{{ settings.title_size }}} class="elementor-icon-box-title">
-					<{{{ iconTag + ' ' + link }}}>{{{ settings.title_text }}}</{{{ iconTag }}}>
-				</{{{ settings.title_size }}}>
-				<p class="elementor-icon-box-description">{{{ settings.description_text }}}</p>
-			</div>
-		</div>
+        <# var link = settings.link.url ? 'href="' + settings.link.url + '"' : '',
+			iconTag = link ? 'a' : 'span'; #>
+        <div class="elementor-icon-box-wrapper">
+            <div class="elementor-icon-box-icon">
+                <{{{ iconTag + ' ' + link }}} class="elementor-icon elementor-animation-{{ settings.hover_animation }}">
+                    <i class="{{ settings.icon }}"></i>
+                </{{{ iconTag }}}>
+            </div>
+            <div class="elementor-icon-box-content">
+                <{{{ settings.title_size }}} class="elementor-icon-box-title">
+                    <{{{ iconTag + ' ' + link }}} class="elementor-inline-editing" data-elementor-setting-key="title_text" data-elementor-inline-editing-toolbar="none">{{{ settings.title_text }}}</{{{ iconTag }}}>
+                </{{{ settings.title_size }}}>
+                <p class="elementor-icon-box-description elementor-inline-editing" data-elementor-setting-key="description_text">{{{ settings.description_text }}}</p>
+            </div>
+        </div>
 		<?php
 	}
 }

@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Widgets_Manager {
 	/**
@@ -9,6 +11,10 @@ class Widgets_Manager {
 	 */
 	private $_widget_types = null;
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function _init_widgets() {
 		$build_widgets_filename = [
 			'common',
@@ -58,12 +64,14 @@ class Widgets_Manager {
 		do_action( 'elementor/widgets/widgets_registered', $this );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function _register_wp_widgets() {
 		global $wp_widget_factory;
 
-		include( ELEMENTOR_PATH . 'includes/widgets/wordpress.php' );
-
-		// Skip Pojo widgets
+		// Skip Pojo widgets.
 		$pojo_allowed_widgets = [
 			'Pojo_Widget_Recent_Posts',
 			'Pojo_Widget_Posts_Group',
@@ -78,7 +86,7 @@ class Widgets_Manager {
 			'Pojo_Widget_WC_Product_Categories',
 		];
 
-		// Allow themes/plugins to filter out their widgets
+		// Allow themes/plugins to filter out their widgets.
 		$black_list = apply_filters( 'elementor/widgets/black_list', [] );
 
 		foreach ( $wp_widget_factory->widgets as $widget_class => $widget_obj ) {
@@ -93,14 +101,26 @@ class Widgets_Manager {
 
 			$elementor_widget_class = __NAMESPACE__ . '\Widget_WordPress';
 
-			$this->register_widget_type( new $elementor_widget_class( [], [ 'widget_name' => $widget_class ] ) );
+			$this->register_widget_type(
+				new $elementor_widget_class( [], [
+					'widget_name' => $widget_class,
+				] )
+			);
 		}
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function _require_files() {
 		require ELEMENTOR_PATH . 'includes/base/widget-base.php';
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function register_widget_type( Widget_Base $widget ) {
 		if ( is_null( $this->_widget_types ) ) {
 			$this->_init_widgets();
@@ -111,6 +131,10 @@ class Widgets_Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function unregister_widget_type( $name ) {
 		if ( ! isset( $this->_widget_types[ $name ] ) ) {
 			return false;
@@ -121,6 +145,10 @@ class Widgets_Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_widget_types( $widget_name = null ) {
 		if ( is_null( $this->_widget_types ) ) {
 			$this->_init_widgets();
@@ -133,6 +161,10 @@ class Widgets_Manager {
 		return $this->_widget_types;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_widget_types_config() {
 		$config = [];
 
@@ -147,8 +179,12 @@ class Widgets_Manager {
 		return $config;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function ajax_render_widget() {
-		if ( empty( $_POST['_nonce'] ) || ! wp_verify_nonce( $_POST['_nonce'], 'elementor-editing' ) ) {
+		if ( ! Plugin::$instance->editor->verify_request_nonce() ) {
 			wp_send_json_error( new \WP_Error( 'token_expired' ) );
 		}
 
@@ -160,14 +196,22 @@ class Widgets_Manager {
 			wp_send_json_error( new \WP_Error( 'no_access' ) );
 		}
 
-		// Override the global $post for the render
-		$GLOBALS['post'] = get_post( (int) $_POST['post_id'] );
+		// Override the global $post for the render.
+		query_posts(
+			[
+				'p' => $_POST['post_id'],
+				'post_type' => 'any',
+			]
+		);
+
+		Plugin::$instance->db->switch_to_post( $_POST['post_id'] );
 
 		$data = json_decode( stripslashes( $_POST['data'] ), true );
 
 		// Start buffering
 		ob_start();
 
+		/** @var Widget_Base $widget */
 		$widget = Plugin::$instance->elements_manager->create_element_instance( $data );
 
 		if ( ! $widget ) {
@@ -187,8 +231,12 @@ class Widgets_Manager {
 		);
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function ajax_get_wp_widget_form() {
-		if ( empty( $_POST['_nonce'] ) || ! wp_verify_nonce( $_POST['_nonce'], 'elementor-editing' ) ) {
+		if ( ! Plugin::$instance->editor->verify_request_nonce() ) {
 			die;
 		}
 
@@ -221,12 +269,20 @@ class Widgets_Manager {
 		wp_send_json_success( $widget_obj->get_form() );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function render_widgets_content() {
 		foreach ( $this->get_widget_types() as $widget ) {
 			$widget->print_template();
 		}
 	}
 
+	/**
+	 * @since 1.3.0
+	 * @access public
+	*/
 	public function get_widgets_frontend_settings_keys() {
 		$keys = [];
 
@@ -241,12 +297,76 @@ class Widgets_Manager {
 		return $keys;
 	}
 
+	/**
+	 * @since 1.3.0
+	 * @access public
+	*/
 	public function enqueue_widgets_scripts() {
 		foreach ( $this->get_widget_types() as $widget ) {
 			$widget->enqueue_scripts();
 		}
 	}
 
+	/**
+	 * Retrieve inline editing configuration.
+	 *
+	 * Returns general inline editing configurations like toolbar types etc.
+	 *
+	 * @access public
+	 * @since 1.8.0
+	 *
+	 * @return array {
+	 *     Inline editing configuration.
+	 *
+	 *     @type array $toolbar {
+	 *         Toolbar types and the actions each toolbar includes.
+	 *         Note: Wysiwyg controls uses the advanced toolbar, textarea controls
+	 *         uses the basic toolbar and text controls has no toolbar.
+	 *
+	 *         @type array $basic    Basic actions included in the edit tool.
+	 *         @type array $advanced Advanced actions included in the edit tool.
+	 *     }
+	 * }
+	 */
+	public function get_inline_editing_config() {
+		$basic_tools = [
+			'bold',
+			'underline',
+			'italic',
+		];
+
+		$advanced_tools = array_merge( $basic_tools, [
+			'createlink',
+			'unlink',
+			'h1' => [
+				'h1',
+				'h2',
+				'h3',
+				'h4',
+				'h5',
+				'h6',
+				'p',
+				'blockquote',
+				'pre',
+			],
+			'list' => [
+				'insertOrderedList',
+				'insertUnorderedList',
+			],
+		] );
+
+		return [
+			'toolbar' => [
+				'basic' => $basic_tools,
+				'advanced' => $advanced_tools,
+			],
+		];
+	}
+
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function __construct() {
 		$this->_require_files();
 

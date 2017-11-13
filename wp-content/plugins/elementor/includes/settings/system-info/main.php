@@ -4,7 +4,9 @@ namespace Elementor\System_Info;
 use Elementor\System_Info\Classes\Abstracts\Base_Reporter;
 use Elementor\System_Info\Helpers\Model_Helper;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Main {
 
@@ -25,21 +27,31 @@ class Main {
 		'mu_plugins' => [],
 	];
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function __construct() {
 		$this->require_files();
 		$this->init_settings();
 		$this->add_actions();
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function require_files() {
 		require __DIR__ . '/classes/abstracts/base-reporter.php';
 		require __DIR__ . '/helpers/model-helper.php';
 	}
 
 	/**
+	 * @since 1.0.0
+	 * @access public
 	 * @param array $properties
 	 *
-	 *@return \WP_Error|false|Base_Reporter
+	 * @return \WP_Error|false|Base_Reporter
 	 */
 	public function create_reporter( array $properties ) {
 		$properties = Model_Helper::prepare_properties( $this->get_settings( 'reporter_properties' ), $properties );
@@ -59,12 +71,20 @@ class Main {
 		return $reporter;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function add_actions() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ], 501 );
 
 		add_action( 'wp_ajax_elementor_system_info_download_file', [ $this, 'download_file' ] );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function display_page() {
 		$reports_info = self::get_allowed_reports();
 
@@ -76,7 +96,7 @@ class Main {
 			<div><?php $this->print_report( $reports, 'html' ); ?></div>
 			<h3><?php _e( 'Copy & Paste Info', 'elementor' ); ?></h3>
 			<div id="elementor-system-info-raw">
-				<label id="elementor-system-info-raw-code-label" for="elementor-system-info-raw-code"><?php _e( 'You can copy the below info as simple text with Ctrl+C / Ctrl+V:', 'elementor' ) ?></label>
+				<label id="elementor-system-info-raw-code-label" for="elementor-system-info-raw-code"><?php _e( 'You can copy the below info as simple text with Ctrl+C / Ctrl+V:', 'elementor' ); ?></label>
 				<textarea id="elementor-system-info-raw-code" readonly>
 					<?php
 					unset( $reports['wordpress']['report']['admin_email'] );
@@ -86,7 +106,7 @@ class Main {
 				</textarea>
 				<script>
 					var textarea = document.getElementById( 'elementor-system-info-raw-code' );
-					var selectRange = function () {
+					var selectRange = function() {
 						textarea.setSelectionRange( 0, textarea.value.length );
 					};
 					textarea.onfocus = textarea.onblur = textarea.onclick = selectRange;
@@ -94,7 +114,7 @@ class Main {
 				</script>
 			</div>
 			<hr>
-			<form action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
+			<form action="<?php echo admin_url( 'admin-ajax.php' ); ?>" method="post">
 				<input type="hidden" name="action" value="elementor_system_info_download_file">
 				<input type="submit" class="button button-primary" value="<?php _e( 'Download System Info', 'elementor' ); ?>">
 			</form>
@@ -102,6 +122,10 @@ class Main {
 		<?php
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function download_file() {
 		if ( ! current_user_can( $this->capability ) ) {
 			wp_die( __( 'You don\'t have a permission to download this file', 'elementor' ) );
@@ -118,10 +142,18 @@ class Main {
 		die;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_reporter_class( $reporter_type ) {
 		return $this->get_settings( 'namespaces.classes_namespace' ) . '\\' . ucfirst( $reporter_type ) . '_Reporter';
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function load_reports( $reports ) {
 		$result = [];
 
@@ -161,6 +193,10 @@ class Main {
 		return $result;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function print_report( $reports, $template = 'raw' ) {
 		static $tabs_count = 0;
 
@@ -176,6 +212,10 @@ class Main {
 		require $template_path;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function register_menu() {
 		$system_info_text = __( 'System Info', 'elementor' );
 
@@ -189,6 +229,10 @@ class Main {
 		);
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access protected
+	*/
 	protected function get_default_settings() {
 		$settings = [];
 
@@ -217,13 +261,19 @@ class Main {
 		return $settings;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function init_settings() {
 		$this->settings = $this->get_default_settings();
 	}
 
 	/**
+	 * @since 1.0.0
+	 * @access public
 	 * @param string $setting
-	 * @param array $container
+	 * @param array  $container
 	 *
 	 * @return mixed
 	 */
@@ -245,10 +295,20 @@ class Main {
 		return $container;
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_allowed_reports() {
 		return self::$reports;
 	}
 
+	/**
+	 * @static
+	 * @since 1.4.0
+	 * @access public
+	*/
 	public static function add_report( $report_name, $report_info ) {
 		self::$reports[ $report_name ] = $report_info;
 	}

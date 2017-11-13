@@ -1,10 +1,13 @@
 <?php
 namespace Elementor\TemplateLibrary;
 
+use Elementor\Core\Settings\Manager as SettingsManager;
 use Elementor\TemplateLibrary\Classes\Import_Images;
 use Elementor\Plugin;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Manager {
 
@@ -15,6 +18,10 @@ class Manager {
 
 	private $_import_images = null;
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function __construct() {
 		$this->register_default_sources();
 
@@ -22,6 +29,8 @@ class Manager {
 	}
 
 	/**
+	 * @since 1.0.0
+	 * @access public
 	 * @return Import_Images
 	 */
 	public function get_import_images_instance() {
@@ -32,6 +41,10 @@ class Manager {
 		return $this->_import_images;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function register_source( $source_class, $args = [] ) {
 		if ( ! class_exists( $source_class ) ) {
 			return new \WP_Error( 'source_class_name_not_exists' );
@@ -47,6 +60,10 @@ class Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function unregister_source( $id ) {
 		if ( ! isset( $this->_registered_sources[ $id ] ) ) {
 			return false;
@@ -57,10 +74,18 @@ class Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_registered_sources() {
 		return $this->_registered_sources;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_source( $id ) {
 		$sources = $this->get_registered_sources();
 
@@ -71,6 +96,10 @@ class Manager {
 		return $sources[ $id ];
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function get_templates() {
 		$templates = [];
 
@@ -81,8 +110,12 @@ class Manager {
 		return $templates;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function save_template( array $args ) {
-		$validate_args = $this->ensure_args( [ 'source', 'data' ], $args );
+		$validate_args = $this->ensure_args( [ 'post_id', 'source', 'content', 'type' ], $args );
 
 		if ( is_wp_error( $validate_args ) ) {
 			return $validate_args;
@@ -94,7 +127,13 @@ class Manager {
 			return new \WP_Error( 'template_error', 'Template source not found.' );
 		}
 
-		$args['data'] = json_decode( stripslashes( $args['data'] ), true );
+		$args['content'] = json_decode( stripslashes( $args['content'] ), true );
+
+		if ( 'page' === $args['type'] ) {
+			$page = SettingsManager::get_settings_managers( 'page' )->get_model( $args['post_id'] );
+
+			$args['page_settings'] = $page->get_data( 'settings' );
+		}
 
 		$template_id = $source->save_item( $args );
 
@@ -105,8 +144,19 @@ class Manager {
 		return $source->get_item( $template_id );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function update_template( array $template_data ) {
-		$validate_args = $this->ensure_args( [ 'source', 'data', 'type' ], $template_data );
+		// TODO: Temp patch since 1.5.0.
+		if ( isset( $template_data['data'] ) ) {
+			$template_data['content'] = $template_data['data'];
+
+			unset( $template_data['data'] );
+		}
+		// END Patch.
+		$validate_args = $this->ensure_args( [ 'source', 'content', 'type' ], $template_data );
 
 		if ( is_wp_error( $validate_args ) ) {
 			return $validate_args;
@@ -118,7 +168,7 @@ class Manager {
 			return new \WP_Error( 'template_error', 'Template source not found.' );
 		}
 
-		$template_data['data'] = json_decode( stripslashes( $template_data['data'] ), true );
+		$template_data['content'] = json_decode( stripslashes( $template_data['content'] ), true );
 
 		$update = $source->update_item( $template_data );
 
@@ -129,6 +179,10 @@ class Manager {
 		return $source->get_item( $template_data['id'] );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function update_templates( array $args ) {
 		foreach ( $args['templates'] as $template_data ) {
 			$result = $this->update_template( $template_data );
@@ -141,7 +195,14 @@ class Manager {
 		return true;
 	}
 
-	public function get_template_content( array $args ) {
+	/**
+	 * @since 1.5.0
+	 * @access public
+	 * @param array $args
+	 *
+	 * @return array|bool|\WP_Error
+	 */
+	public function get_template_data( array $args ) {
 		$validate_args = $this->ensure_args( [ 'source', 'template_id' ], $args );
 
 		if ( is_wp_error( $validate_args ) ) {
@@ -158,9 +219,13 @@ class Manager {
 			return new \WP_Error( 'template_error', 'Template source not found.' );
 		}
 
-		return $source->get_content( $args['template_id'] );
+		return $source->get_data( $args );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function delete_template( array $args ) {
 		$validate_args = $this->ensure_args( [ 'source', 'template_id' ], $args );
 
@@ -179,8 +244,11 @@ class Manager {
 		return true;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function export_template( array $args ) {
-		// TODO: Add nonce for security
 		$validate_args = $this->ensure_args( [ 'source', 'template_id' ], $args );
 
 		if ( is_wp_error( $validate_args ) ) {
@@ -193,10 +261,14 @@ class Manager {
 			return new \WP_Error( 'template_error', 'Template source not found.' );
 		}
 
-		// If you reach this line, the export was not successful
+		// If you reach this line, the export was not successful.
 		return $source->export_template( $args['template_id'] );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function import_template() {
 		/** @var Source_Local $source */
 		$source = $this->get_source( 'local' );
@@ -204,30 +276,41 @@ class Manager {
 		return $source->import_template();
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function on_import_template_success() {
 		wp_redirect( admin_url( 'edit.php?post_type=' . Source_Local::CPT ) );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function on_import_template_error( \WP_Error $error ) {
 		echo $error->get_error_message();
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public function on_export_template_error( \WP_Error $error ) {
 		_default_wp_die_handler( $error->get_error_message(), 'Elementor Library' );
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function register_default_sources() {
-		include( ELEMENTOR_PATH . 'includes/template-library/classes/class-import-images.php' );
-		include( ELEMENTOR_PATH . 'includes/template-library/sources/base.php' );
-
 		$sources = [
 			'local',
 			'remote',
 		];
 
 		foreach ( $sources as $source_filename ) {
-			include( ELEMENTOR_PATH . 'includes/template-library/sources/' . $source_filename . '.php' );
-
 			$class_name = ucwords( $source_filename );
 			$class_name = str_replace( '-', '_', $class_name );
 
@@ -235,7 +318,15 @@ class Manager {
 		}
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function handle_ajax_request( $ajax_request ) {
+		if ( ! Plugin::$instance->editor->verify_request_nonce() ) {
+			wp_send_json_error( new \WP_Error( 'token_expired' ) );
+		}
+
 		$result = call_user_func( [ $this, $ajax_request ], $_REQUEST );
 
 		$request_type = ! empty( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) === 'xmlhttprequest' ? 'ajax' : 'direct';
@@ -275,10 +366,14 @@ class Manager {
 		die;
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function init_ajax_calls() {
 		$allowed_ajax_requests = [
 			'get_templates',
-			'get_template_content',
+			'get_template_data',
 			'save_template',
 			'update_templates',
 			'delete_template',
@@ -293,6 +388,10 @@ class Manager {
 		}
 	}
 
+	/**
+	 * @since 1.0.0
+	 * @access private
+	*/
 	private function ensure_args( array $required_args, array $specified_args ) {
 		$not_specified_args = array_diff( $required_args, array_keys( array_filter( $specified_args ) ) );
 

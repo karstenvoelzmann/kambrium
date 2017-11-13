@@ -1,26 +1,73 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
+/**
+ * Icon List Widget
+ */
 class Widget_Icon_List extends Widget_Base {
 
+	/**
+	 * Retrieve icon list widget name.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget name.
+	 */
 	public function get_name() {
 		return 'icon-list';
 	}
 
+	/**
+	 * Retrieve icon list widget title.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget title.
+	 */
 	public function get_title() {
 		return __( 'Icon List', 'elementor' );
 	}
 
+	/**
+	 * Retrieve icon list widget icon.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string Widget icon.
+	 */
 	public function get_icon() {
 		return 'eicon-bullet-list';
 	}
 
+	/**
+	 * Retrieve the list of categories the icon list widget belongs to.
+	 *
+	 * Used to determine where to display the widget in the editor.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return array Widget categories.
+	 */
 	public function get_categories() {
 		return [ 'general-elements' ];
 	}
 
+	/**
+	 * Register icon list widget controls.
+	 *
+	 * Adds different input fields to allow the user to change and customize the widget settings.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function _register_controls() {
 		$this->start_controls_section(
 			'section_icon',
@@ -119,26 +166,20 @@ class Widget_Icon_List extends Widget_Base {
 				'type' => Controls_Manager::CHOOSE,
 				'options' => [
 					'left' => [
-						'title' => __( 'Left', 'elementor' ),
-						'icon' => 'fa fa-align-left',
+						'title' => __( 'Start', 'elementor' ),
+						'icon' => 'eicon-h-align-left',
 					],
 					'center' => [
 						'title' => __( 'Center', 'elementor' ),
-						'icon' => 'fa fa-align-center',
+						'icon' => 'eicon-h-align-center',
 					],
 					'right' => [
-						'title' => __( 'Right', 'elementor' ),
-						'icon' => 'fa fa-align-right',
+						'title' => __( 'End', 'elementor' ),
+						'icon' => 'eicon-h-align-right',
 					],
 				],
 				'prefix_class' => 'elementor-align-',
-				'selectors' => [
-					'{{WRAPPER}} .elementor-icon-list-item, {{WRAPPER}} .elementor-icon-list-item a' => 'justify-content: {{VALUE}};',
-				],
-				'selectors_dictionary' => [
-					'left' => 'flex-start',
-					'right' => 'flex-end',
-				],
+				'classes' => 'elementor-control-start-end',
 			]
 		);
 
@@ -263,7 +304,7 @@ class Widget_Icon_List extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'icon_size',
 			[
 				'label' => __( 'Size', 'elementor' ),
@@ -338,25 +379,50 @@ class Widget_Icon_List extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/**
+	 * Render icon list widget output on the frontend.
+	 *
+	 * Written in PHP and used to generate the final HTML.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function render() {
 		$settings = $this->get_settings();
 		?>
 		<ul class="elementor-icon-list-items">
-			<?php foreach ( $settings['icon_list'] as $item ) : ?>
+			<?php foreach ( $settings['icon_list'] as $index => $item ) :
+				$repeater_setting_key = $this->get_repeater_setting_key( 'text', 'icon_list', $index );
+
+				$this->add_render_attribute( $repeater_setting_key, 'class', 'elementor-icon-list-text' );
+
+				$this->add_inline_editing_attributes( $repeater_setting_key );
+				?>
 				<li class="elementor-icon-list-item" >
 					<?php
 					if ( ! empty( $item['link']['url'] ) ) {
-						$target = $item['link']['is_external'] ? ' target="_blank"' : '';
+						$link_key = 'link_' . $index;
 
-						echo '<a href="' . $item['link']['url'] . '"' . $target . '>';
+						$this->add_render_attribute( $link_key, 'href', $item['link']['url'] );
+
+						if ( $item['link']['is_external'] ) {
+							$this->add_render_attribute( $link_key, 'target', '_blank' );
+						}
+
+						if ( $item['link']['nofollow'] ) {
+							$this->add_render_attribute( $link_key, 'rel', 'nofollow' );
+						}
+
+						echo '<a ' . $this->get_render_attribute_string( $link_key ) . '>';
 					}
 
-					if ( $item['icon'] ) : ?>
+					if ( $item['icon'] ) :
+					?>
 						<span class="elementor-icon-list-icon">
 							<i class="<?php echo esc_attr( $item['icon'] ); ?>"></i>
 						</span>
 					<?php endif; ?>
-					<span class="elementor-icon-list-text"><?php echo $item['text']; ?></span>
+					<span <?php echo $this->get_render_attribute_string( $repeater_setting_key ); ?>><?php echo $item['text']; ?></span>
 					<?php
 					if ( ! empty( $item['link']['url'] ) ) {
 						echo '</a>';
@@ -364,17 +430,26 @@ class Widget_Icon_List extends Widget_Base {
 					?>
 				</li>
 				<?php
-			endforeach; ?>
+			endforeach;
+			?>
 		</ul>
 		<?php
 	}
 
+	/**
+	 * Render icon list widget output in the editor.
+	 *
+	 * Written as a Backbone JavaScript template and used to generate the live preview.
+	 *
+	 * @since 1.0.0
+	 * @access protected
+	 */
 	protected function _content_template() {
 		?>
 		<ul class="elementor-icon-list-items">
 			<#
 			if ( settings.icon_list ) {
-				_.each( settings.icon_list, function( item ) { #>
+				_.each( settings.icon_list, function( item, index ) { #>
 					<li class="elementor-icon-list-item">
 						<# if ( item.link && item.link.url ) { #>
 							<a href="{{ item.link.url }}">
@@ -382,7 +457,7 @@ class Widget_Icon_List extends Widget_Base {
 						<span class="elementor-icon-list-icon">
 							<i class="{{ item.icon }}"></i>
 						</span>
-						<span class="elementor-icon-list-text">{{{ item.text }}}</span>
+						<span class="elementor-icon-list-text elementor-inline-editing" data-elementor-setting-key="icon_list.{{{ index }}}.text">{{{ item.text }}}</span>
 						<# if ( item.link && item.link.url ) { #>
 							</a>
 						<# } #>

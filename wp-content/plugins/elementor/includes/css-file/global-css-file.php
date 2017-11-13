@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Global_CSS_File extends CSS_File {
 
@@ -10,6 +12,16 @@ class Global_CSS_File extends CSS_File {
 	const FILE_HANDLER_ID = 'elementor-global';
 
 	/**
+	 * @since 1.6.0
+	 * @access public
+	*/
+	public function get_name() {
+		return 'global';
+	}
+
+	/**
+	 * @since 1.2.0
+	 * @access protected
 	 * @return array
 	 */
 	protected function load_meta() {
@@ -17,6 +29,8 @@ class Global_CSS_File extends CSS_File {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access protected
 	 * @param string $meta
 	 */
 	protected function update_meta( $meta ) {
@@ -24,30 +38,42 @@ class Global_CSS_File extends CSS_File {
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access protected
 	 * @return string
 	 */
 	protected function get_file_handle_id() {
 		return self::FILE_HANDLER_ID;
 	}
 
+	/**
+	 * @since 1.2.0
+	 * @access protected
+	*/
 	protected function render_css() {
 		$this->render_schemes_css();
-
-		$this->render_settings_css();
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access protected
 	 * @return string
 	 */
 	protected function get_file_name() {
 		return 'global';
 	}
 
+	/**
+	 * @since 1.2.0
+	 * @access protected
+	*/
 	protected function get_inline_dependency() {
 		return 'elementor-frontend';
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @access protected
 	 * @return bool
 	 */
 	protected function is_update_required() {
@@ -68,6 +94,10 @@ class Global_CSS_File extends CSS_File {
 		return false;
 	}
 
+	/**
+	 * @since 1.2.0
+	 * @access private
+	*/
 	private function render_schemes_css() {
 		$elementor = Plugin::$instance;
 
@@ -75,32 +105,26 @@ class Global_CSS_File extends CSS_File {
 			$scheme_controls = $widget->get_scheme_controls();
 
 			foreach ( $scheme_controls as $control ) {
-				$this->add_control_rules( $control, $widget->get_controls(), function ( $control ) use ( $elementor ) {
-					$scheme_value = $elementor->schemes_manager->get_scheme_value( $control['scheme']['type'], $control['scheme']['value'] );
+				$this->add_control_rules(
+					$control, $widget->get_controls(), function( $control ) use ( $elementor ) {
+						$scheme_value = $elementor->schemes_manager->get_scheme_value( $control['scheme']['type'], $control['scheme']['value'] );
 
-					if ( empty( $scheme_value ) ) {
-						return null;
-					}
+						if ( empty( $scheme_value ) ) {
+							return null;
+						}
 
-					if ( ! empty( $control['scheme']['key'] ) ) {
-						$scheme_value = $scheme_value[ $control['scheme']['key'] ];
-					}
+						if ( ! empty( $control['scheme']['key'] ) ) {
+							$scheme_value = $scheme_value[ $control['scheme']['key'] ];
+						}
 
-					if ( empty( $scheme_value ) ) {
-						return null;
-					}
+						if ( empty( $scheme_value ) ) {
+							return null;
+						}
 
-					return $scheme_value;
-				}, [ '{{WRAPPER}}' ], [ '.elementor-widget-' . $widget->get_name() ] );
+						return $scheme_value;
+					}, [ '{{WRAPPER}}' ], [ '.elementor-widget-' . $widget->get_name() ]
+				);
 			}
-		}
-	}
-
-	private function render_settings_css() {
-		$container_width = absint( get_option( 'elementor_container_width' ) );
-
-		if ( ! empty( $container_width ) ) {
-			$this->stylesheet_obj->add_rules( '.elementor-section.elementor-section-boxed > .elementor-container', 'max-width:' . $container_width . 'px' );
 		}
 	}
 }

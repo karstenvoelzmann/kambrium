@@ -1,7 +1,9 @@
 <?php
 namespace Elementor;
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 class Fonts {
 
@@ -10,6 +12,11 @@ class Fonts {
 	const EARLYACCESS = 'earlyaccess';
 	const LOCAL = 'local';
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_fonts() {
 		return [
 			// System fonts.
@@ -21,9 +28,10 @@ class Fonts {
 			'Trebuchet MS' => self::SYSTEM,
 			'Georgia' => self::SYSTEM,
 
-			// Google Fonts (last update: 04/08/2016).
+			// Google Fonts (last update: 29/10/2017).
 			'ABeeZee' => self::GOOGLE,
 			'Abel' => self::GOOGLE,
+			'Abhaya Libre' => self::GOOGLE,
 			'Abril Fatface' => self::GOOGLE,
 			'Aclonica' => self::GOOGLE,
 			'Acme' => self::GOOGLE,
@@ -55,7 +63,6 @@ class Fonts {
 			'Amarante' => self::GOOGLE,
 			'Amaranth' => self::GOOGLE,
 			'Amatic SC' => self::GOOGLE,
-			'Amatica SC' => self::GOOGLE,
 			'Amethysta' => self::GOOGLE,
 			'Amiko' => self::GOOGLE,
 			'Amiri' => self::GOOGLE,
@@ -74,6 +81,7 @@ class Fonts {
 			'Arbutus' => self::GOOGLE,
 			'Arbutus Slab' => self::GOOGLE,
 			'Architects Daughter' => self::GOOGLE,
+			'Archivo' => self::GOOGLE,
 			'Archivo Black' => self::GOOGLE,
 			'Archivo Narrow' => self::GOOGLE,
 			'Aref Ruqaa' => self::GOOGLE,
@@ -81,10 +89,12 @@ class Fonts {
 			'Arimo' => self::GOOGLE,
 			'Arizonia' => self::GOOGLE,
 			'Armata' => self::GOOGLE,
+			'Arsenal' => self::GOOGLE,
 			'Artifika' => self::GOOGLE,
 			'Arvo' => self::GOOGLE,
 			'Arya' => self::GOOGLE,
 			'Asap' => self::GOOGLE,
+			'Asap Condensed' => self::GOOGLE,
 			'Asar' => self::GOOGLE,
 			'Asset' => self::GOOGLE,
 			'Assistant' => self::GOOGLE,
@@ -103,17 +113,26 @@ class Fonts {
 			'Averia Sans Libre' => self::GOOGLE,
 			'Averia Serif Libre' => self::GOOGLE,
 			'Bad Script' => self::GOOGLE,
+			'Bahiana' => self::GOOGLE,
 			'Baloo' => self::GOOGLE,
 			'Baloo Bhai' => self::GOOGLE,
+			'Baloo Bhaijaan' => self::GOOGLE,
+			'Baloo Bhaina' => self::GOOGLE,
+			'Baloo Chettan' => self::GOOGLE,
 			'Baloo Da' => self::GOOGLE,
+			'Baloo Paaji' => self::GOOGLE,
+			'Baloo Tamma' => self::GOOGLE,
+			'Baloo Tammudu' => self::GOOGLE,
 			'Baloo Thambi' => self::GOOGLE,
 			'Balthazar' => self::GOOGLE,
 			'Bangers' => self::GOOGLE,
+			'Barrio' => self::GOOGLE,
 			'Basic' => self::GOOGLE,
 			'Battambang' => self::GOOGLE,
 			'Baumans' => self::GOOGLE,
 			'Bayon' => self::GOOGLE,
 			'Belgrano' => self::GOOGLE,
+			'Bellefair' => self::GOOGLE,
 			'Belleza' => self::GOOGLE,
 			'BenchNine' => self::GOOGLE,
 			'Bentham' => self::GOOGLE,
@@ -245,11 +264,11 @@ class Fonts {
 			'Dorsa' => self::GOOGLE,
 			'Dosis' => self::GOOGLE,
 			'Dr Sugiyama' => self::GOOGLE,
+			'Droid Arabic Kufi' => self::EARLYACCESS, // Hack for Google Early Access.
+			'Droid Arabic Naskh' => self::EARLYACCESS, // Hack for Google Early Access.
 			'Droid Sans' => self::GOOGLE,
 			'Droid Sans Mono' => self::GOOGLE,
 			'Droid Serif' => self::GOOGLE,
-			'Droid Arabic Kufi' => self::EARLYACCESS,
-			'Droid Arabic Naskh' => self::EARLYACCESS,
 			'Duru Sans' => self::GOOGLE,
 			'Dynalight' => self::GOOGLE,
 			'EB Garamond' => self::GOOGLE,
@@ -257,13 +276,17 @@ class Fonts {
 			'Eater' => self::GOOGLE,
 			'Economica' => self::GOOGLE,
 			'Eczar' => self::GOOGLE,
-			'Ek Mukta' => self::GOOGLE,
 			'El Messiri' => self::GOOGLE,
 			'Electrolize' => self::GOOGLE,
 			'Elsie' => self::GOOGLE,
 			'Elsie Swash Caps' => self::GOOGLE,
 			'Emblema One' => self::GOOGLE,
 			'Emilys Candy' => self::GOOGLE,
+			'Encode Sans' => self::GOOGLE,
+			'Encode Sans Condensed' => self::GOOGLE,
+			'Encode Sans Expanded' => self::GOOGLE,
+			'Encode Sans Semi Condensed' => self::GOOGLE,
+			'Encode Sans Semi Expanded' => self::GOOGLE,
 			'Engagement' => self::GOOGLE,
 			'Englebert' => self::GOOGLE,
 			'Enriqueta' => self::GOOGLE,
@@ -281,6 +304,7 @@ class Fonts {
 			'Faster One' => self::GOOGLE,
 			'Fasthand' => self::GOOGLE,
 			'Fauna One' => self::GOOGLE,
+			'Faustina' => self::GOOGLE,
 			'Federant' => self::GOOGLE,
 			'Federo' => self::GOOGLE,
 			'Felipa' => self::GOOGLE,
@@ -288,6 +312,8 @@ class Fonts {
 			'Finger Paint' => self::GOOGLE,
 			'Fira Mono' => self::GOOGLE,
 			'Fira Sans' => self::GOOGLE,
+			'Fira Sans Condensed' => self::GOOGLE,
+			'Fira Sans Extra Condensed' => self::GOOGLE,
 			'Fjalla One' => self::GOOGLE,
 			'Fjord One' => self::GOOGLE,
 			'Flamenco' => self::GOOGLE,
@@ -439,6 +465,12 @@ class Fonts {
 			'Lekton' => self::GOOGLE,
 			'Lemon' => self::GOOGLE,
 			'Lemonada' => self::GOOGLE,
+			'Libre Barcode 128' => self::GOOGLE,
+			'Libre Barcode 128 Text' => self::GOOGLE,
+			'Libre Barcode 39' => self::GOOGLE,
+			'Libre Barcode 39 Extended' => self::GOOGLE,
+			'Libre Barcode 39 Extended Text' => self::GOOGLE,
+			'Libre Barcode 39 Text' => self::GOOGLE,
 			'Libre Baskerville' => self::GOOGLE,
 			'Libre Franklin' => self::GOOGLE,
 			'Life Savers' => self::GOOGLE,
@@ -468,6 +500,7 @@ class Fonts {
 			'Mako' => self::GOOGLE,
 			'Mallanna' => self::GOOGLE,
 			'Mandali' => self::GOOGLE,
+			'Manuale' => self::GOOGLE,
 			'Marcellus' => self::GOOGLE,
 			'Marcellus SC' => self::GOOGLE,
 			'Marck Script' => self::GOOGLE,
@@ -527,6 +560,9 @@ class Fonts {
 			'Mr De Haviland' => self::GOOGLE,
 			'Mrs Saint Delafield' => self::GOOGLE,
 			'Mrs Sheppards' => self::GOOGLE,
+			'Mukta' => self::GOOGLE,
+			'Mukta Mahee' => self::GOOGLE,
+			'Mukta Malar' => self::GOOGLE,
 			'Mukta Vaani' => self::GOOGLE,
 			'Muli' => self::GOOGLE,
 			'Mystery Quest' => self::GOOGLE,
@@ -543,11 +579,11 @@ class Fonts {
 			'Nosifer' => self::GOOGLE,
 			'Nothing You Could Do' => self::GOOGLE,
 			'Noticia Text' => self::GOOGLE,
+			'Noto Kufi Arabic' => self::EARLYACCESS, // Hack for Google Early Access.
+			'Noto Naskh Arabic' => self::EARLYACCESS, // Hack for Google Early Access.
 			'Noto Sans' => self::GOOGLE,
-			'Noto Sans Hebrew' => self::EARLYACCESS,
+			'Noto Sans Hebrew' => self::EARLYACCESS, // Hack for Google Early Access.
 			'Noto Serif' => self::GOOGLE,
-			'Noto Kufi Arabic' => self::EARLYACCESS,
-			'Noto Naskh Arabic' => self::EARLYACCESS,
 			'Nova Cut' => self::GOOGLE,
 			'Nova Flat' => self::GOOGLE,
 			'Nova Mono' => self::GOOGLE,
@@ -558,6 +594,7 @@ class Fonts {
 			'Nova Square' => self::GOOGLE,
 			'Numans' => self::GOOGLE,
 			'Nunito' => self::GOOGLE,
+			'Nunito Sans' => self::GOOGLE,
 			'Odor Mean Chey' => self::GOOGLE,
 			'Offside' => self::GOOGLE,
 			'Old Standard TT' => self::GOOGLE,
@@ -565,9 +602,9 @@ class Fonts {
 			'Oleo Script' => self::GOOGLE,
 			'Oleo Script Swash Caps' => self::GOOGLE,
 			'Open Sans' => self::GOOGLE,
-			'Open Sans Hebrew' => self::EARLYACCESS,
 			'Open Sans Condensed' => self::GOOGLE,
-			'Open Sans Hebrew Condensed' => self::EARLYACCESS,
+			'Open Sans Hebrew' => self::EARLYACCESS, // Hack for Google Early Access.
+			'Open Sans Hebrew Condensed' => self::EARLYACCESS, // Hack for Google Early Access.
 			'Oranienbaum' => self::GOOGLE,
 			'Orbitron' => self::GOOGLE,
 			'Oregano' => self::GOOGLE,
@@ -577,6 +614,8 @@ class Fonts {
 			'Over the Rainbow' => self::GOOGLE,
 			'Overlock' => self::GOOGLE,
 			'Overlock SC' => self::GOOGLE,
+			'Overpass' => self::GOOGLE,
+			'Overpass Mono' => self::GOOGLE,
 			'Ovo' => self::GOOGLE,
 			'Oxygen' => self::GOOGLE,
 			'Oxygen Mono' => self::GOOGLE,
@@ -587,8 +626,10 @@ class Fonts {
 			'PT Serif' => self::GOOGLE,
 			'PT Serif Caption' => self::GOOGLE,
 			'Pacifico' => self::GOOGLE,
+			'Padauk' => self::GOOGLE,
 			'Palanquin' => self::GOOGLE,
 			'Palanquin Dark' => self::GOOGLE,
+			'Pangolin' => self::GOOGLE,
 			'Paprika' => self::GOOGLE,
 			'Parisienne' => self::GOOGLE,
 			'Passero One' => self::GOOGLE,
@@ -683,7 +724,6 @@ class Fonts {
 			'Rozha One' => self::GOOGLE,
 			'Rubik' => self::GOOGLE,
 			'Rubik Mono One' => self::GOOGLE,
-			'Rubik One' => self::GOOGLE,
 			'Ruda' => self::GOOGLE,
 			'Rufina' => self::GOOGLE,
 			'Ruge Boogie' => self::GOOGLE,
@@ -696,10 +736,14 @@ class Fonts {
 			'Sacramento' => self::GOOGLE,
 			'Sahitya' => self::GOOGLE,
 			'Sail' => self::GOOGLE,
+			'Saira' => self::GOOGLE,
+			'Saira Condensed' => self::GOOGLE,
+			'Saira Extra Condensed' => self::GOOGLE,
+			'Saira Semi Condensed' => self::GOOGLE,
 			'Salsa' => self::GOOGLE,
 			'Sanchez' => self::GOOGLE,
 			'Sancreek' => self::GOOGLE,
-			'Sansita One' => self::GOOGLE,
+			'Sansita' => self::GOOGLE,
 			'Sarala' => self::GOOGLE,
 			'Sarina' => self::GOOGLE,
 			'Sarpanch' => self::GOOGLE,
@@ -710,6 +754,8 @@ class Fonts {
 			'Scope One' => self::GOOGLE,
 			'Seaweed Script' => self::GOOGLE,
 			'Secular One' => self::GOOGLE,
+			'Sedgwick Ave' => self::GOOGLE,
+			'Sedgwick Ave Display' => self::GOOGLE,
 			'Sevillana' => self::GOOGLE,
 			'Seymour One' => self::GOOGLE,
 			'Shadows Into Light' => self::GOOGLE,
@@ -747,6 +793,7 @@ class Fonts {
 			'Source Serif Pro' => self::GOOGLE,
 			'Space Mono' => self::GOOGLE,
 			'Special Elite' => self::GOOGLE,
+			'Spectral' => self::GOOGLE,
 			'Spicy Rice' => self::GOOGLE,
 			'Spinnaker' => self::GOOGLE,
 			'Spirax' => self::GOOGLE,
@@ -834,18 +881,31 @@ class Fonts {
 			'Yesteryear' => self::GOOGLE,
 			'Yrsa' => self::GOOGLE,
 			'Zeyada' => self::GOOGLE,
+			'Zilla Slab' => self::GOOGLE,
+			'Zilla Slab Highlight' => self::GOOGLE,
 		];
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_font_type( $name ) {
 		$fonts = self::get_fonts();
 
-		if ( empty( $fonts[ $name ] ) )
+		if ( empty( $fonts[ $name ] ) ) {
 			return false;
+		}
 
 		return $fonts[ $name ];
 	}
 
+	/**
+	 * @static
+	 * @since 1.0.0
+	 * @access public
+	*/
 	public static function get_fonts_by_groups( $groups = [] ) {
 		return array_filter( self::get_fonts(), function( $font ) use ( $groups ) {
 			return in_array( $font, $groups );
