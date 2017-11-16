@@ -5,3 +5,20 @@ Description: Twenty Sixteen Child Theme
 Template: twentysixteen
 Version: 1.0.0
 */
+
+.custom-logo {
+    max-width: 30px;
+    position: absolute;
+    top: 30px;
+}
+@media screen and (min-width: 44.375em) {
+    .custom-logo {
+        max-width: 50px;
+    }
+}
+@media screen and (min-width: 61.5625em) {
+    .custom-logo {
+        max-width: 62px;
+        top: 42px;
+    }
+}
