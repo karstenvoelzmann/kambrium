@@ -37,5 +37,9 @@ get_header(); ?>
 
 </div><!-- .content-area -->
 
-<?php get_sidebar(); ?>
+<?php
+/** if page has custom field called disableSidebar = true, remove sidebar */
+$disableSidebar = get_post_meta($post->ID, 'disableSidebar', $single = true);
+if ($disableSidebar !== 'true') { get_sidebar(); }
+?>
 <?php get_footer(); ?>
