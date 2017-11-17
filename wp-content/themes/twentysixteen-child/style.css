@@ -28,11 +28,17 @@ Version: 1.0.0
 }
 @media screen and (min-width: 44.375em) {
     .page-id-85 .content-area {
-        width: 120%;
+      width: 120%;
     }
 }
 @media screen and (min-width: 56.875em) {
-    .page-id-85 .content-area {
-        width: 100%;
+    .page-id-85 .content-area   {
+        width: 90%;
     }
+}
+/* logo inline*/
+.entry-content a img.logo_inline {
+    float: none;
+    display: inline;
+    margin: 0;
 }
